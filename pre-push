@@ -1,0 +1,48 @@
+#!/bin/sh
+
+function echoMessage() {
+  message="${1}"
+  char="${2}"
+  length="${#message}"
+
+  repeat "${char}" "${length}"
+  echo ""
+  echo -e "${message}"
+  repeat "${char}" "${length}"
+  echo ""
+}
+
+function repeat() {
+  str="${1}"
+  count="${2}"
+
+  yes "${str}" | head -n "${count}" | tr -d '\n'
+}
+
+read local_ref local_oid remote_ref remote_oid
+
+if [[ "${remote_ref}" =~ ^refs/tags ]];
+then
+  target="${remote_ref#refs/tags/}"
+
+  type="tag"
+else
+  target="${remote_ref#refs/heads/}"
+
+  type="branch"
+fi
+
+echoMessage "Do you want to push the ${target} ${type}? [y/N]" "="
+
+exec < /dev/tty
+
+read yn
+
+if [[ ! "${yn}" =~ ^[yY]$ ]];
+then
+  echoMessage "Canceled push on ${target} ${type}." "+"
+
+  exit 1
+fi
+
+exit 0
